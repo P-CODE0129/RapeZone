@@ -1,5 +1,7 @@
 RapeZone Classification – Machine Learning Project
+
 Project Overview
+
 RapeZone Classification is a machine learning-based crime analysis system designed to identify areas with different levels of rape crime risk using historical data.
 
 The project analyzes rape crime statistics across multiple years and classifies districts into different risk zones such as High Risk, Medium Risk, and Low Risk. The aim is to help identify potentially dangerous areas and improve public awareness and preventive planning.
