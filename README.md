@@ -1,6 +1,6 @@
 RapeZone Classification – Machine Learning Project
 
-                                                                Project Overview
+                                                         Project Overview
 
 RapeZone Classification is a machine learning-based crime analysis system designed to identify areas with different levels of rape crime risk using historical data.
 
@@ -8,7 +8,7 @@ The project analyzes rape crime statistics across multiple years and classifies 
 
 The system uses historical crime data and machine learning techniques to detect patterns and generate predictions about crime risk levels
 
-                                                                  Problem Statement
+                                                          Problem Statement
 
 Rape is a serious public safety concern. Although crime data is available, it is often not used effectively for predictive analysis.
 This project aims to analyze historical rape crime data and classify regions into future rape risk zones (High, Medium, Low) using machine learning techniques. 
@@ -33,7 +33,7 @@ The main objectives of this project are:
 
 -Provide safety alerts and awareness information based on risk level 
 
-                                                                Methodology
+                                                      Methodology
 
 The project follows a multi-step machine learning pipeline.
 
@@ -97,7 +97,7 @@ The model analyzes historical crime patterns and predicts risk categories such a
 
 -Low Risk Zone
 
-                                                                Project Focus
+                                                         Project Focus
 
 Although crime data across multiple Indian states was reviewed during the initial analysis, Rajasthan was identified as one of the states with relatively higher reported rape crime cases. Therefore, this project focuses specifically on analyzing Rajasthan crime data to study district-level and area-level patterns.
 
@@ -107,7 +107,7 @@ To further refine the analysis, the project also examines the city or district w
 
 This layered analysis helps in identifying both state-level and local-level risk patterns, allowing a better understanding of crime hotspots and potentially dangerous zones.
 
-                                                              Output of the System
+                                                     Output of the System
 
 The final output of the system is a district-wise risk classification.
 
