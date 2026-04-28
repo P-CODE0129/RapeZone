@@ -1,0 +1,45 @@
+# ================================
+# STEP 9: SVM Model
+# ================================
+from sklearn.svm import SVC
+
+# Create model
+svm_model = SVC(kernel='rbf')   # rbf = most commonly used
+
+# Train
+svm_model.fit(X_train, y_train)
+
+# ================================
+# STEP 10: Prediction
+# ================================
+y_pred_svm = svm_model.predict(X_test)
+
+# ================================
+# STEP 11: Evaluation
+# ================================
+print("\n🔹 SVM MODEL PERFORMANCE 🔹")
+print("Accuracy:", accuracy_score(y_test, y_pred_svm))
+
+print("\nClassification Report:\n")
+print(classification_report(y_test, y_pred_svm))
+
+cm_svm = confusion_matrix(y_test, y_pred_svm)
+
+# ================================
+# 📊 GRAPH: Confusion Matrix (SVM)
+# ================================
+plt.figure(figsize=(6,5))
+
+sns.heatmap(cm_svm,
+            annot=True,
+            fmt='d',
+            cmap='Blues',
+            xticklabels=["H", "M", "L"],
+            yticklabels=["H", "M", "L"])
+
+plt.xlabel("Predicted Label")
+plt.ylabel("Actual Label")
+plt.title("SVM Confusion Matrix (H=High, M=Medium, L=Low)")
+plt.savefig("Confusion Matrix using SVM.png")
+files.download("Confusion Matrix using SVM.png")
+plt.show()
