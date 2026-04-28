@@ -1,0 +1,228 @@
+# ================================
+# STEP 1: Import Libraries
+# ================================
+import pandas as pd
+import io
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+
+# ================================
+# STEP 2: Upload Dataset
+# ================================
+from google.colab import files
+uploaded = files.upload()
+df = pd.read_csv(io.BytesIO(uploaded[list(uploaded.keys())[0]]))
+
+
+# ================================
+# STEP 4: Data Cleaning
+# ================================
+df["District"] = df["District"].str.strip().str.upper()
+df.dropna(inplace=True)
+df = df.sort_values(["District", "Year"])
+
+# ================================
+# STEP 5: Feature Engineering
+# ================================
+df["growth_rate"] = df.groupby("District")["Total_Cases"].pct_change()
+df["cases_per_female"] = df["Total_Cases"] / df["female_total"]
+df["year_diff"] = df["Year"] - df["Year"].min()
+df.fillna(0, inplace=True)
+
+# ================================
+# STEP 6: Create Target (Risk Level)
+# ================================
+def classify_risk(x):
+    if x > df["Total_Cases"].quantile(0.66):
+        return "High"
+    elif x > df["Total_Cases"].quantile(0.33):
+        return "Medium"
+    else:
+        return "Low"
+
+df["Risk_Level"] = df["Total_Cases"].apply(classify_risk)
+
+# ================================
+# 📊 GRAPH 1: Top Districts (Only useful graph)
+# ================================
+district_cases = df.groupby("District")["Total_Cases"].sum().sort_values(ascending=False)
+
+plt.figure(figsize=(10,5))
+district_cases.head(10).plot(kind="bar")
+plt.title("Top Districts by Total Cases")
+plt.xlabel("District")
+plt.ylabel("Total Cases")
+plt.xticks(rotation=45)
+plt.show()
+
+# ================================
+# STEP 7: Prepare Features (NO Total_Cases)
+# ================================
+X = df[
+    [
+        "female_total",
+        "growth_rate",
+        "cases_per_female",
+        "year_diff"
+    ]
+]
+
+y = df["Risk_Level"]
+
+# ================================
+# STEP 8: Train-Test Split
+# ================================
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# ================================
+# STEP 9: Logistic Regression
+# ================================
+model = LogisticRegression(max_iter=1000)
+model.fit(X_train, y_train)
+
+# ================================
+# STEP 10: Prediction
+# ================================
+y_pred = model.predict(X_test)
+
+# ================================
+# STEP 11: Evaluation
+# ================================
+print("\n🔹 MODEL PERFORMANCE 🔹")
+print("Accuracy:", accuracy_score(y_test, y_pred))
+
+print("\nClassification Report:\n")
+print(classification_report(y_test, y_pred))
+
+cm = confusion_matrix(y_test, y_pred)
+
+# ================================
+# 📊 GRAPH 2: Confusion Matrix (Clean)
+# ================================
+plt.figure(figsize=(6,5))
+
+sns.heatmap(cm,
+            annot=True,
+            fmt='d',
+            cmap='Blues',
+            xticklabels=["H", "M", "L"],
+            yticklabels=["H", "M", "L"])
+
+plt.xlabel("Predicted Label")
+plt.ylabel("Actual Label")
+plt.title("Confusion Matrix (H=High, M=Medium, L=Low)")
+plt.savefig("Confusion Matrix of Logistics Regression.png")
+files.download("Confusion Matrix of Logistics Regression.png")
+plt.show()
+
+# ================================
+# STEP 12: Final District Output
+# ================================
+district_result = df.groupby("District").agg({
+    "Total_Cases": "sum"
+}).reset_index()
+
+# Correct classification (fixed)
+q1 = district_result["Total_Cases"].quantile(0.33)
+q2 = district_result["Total_Cases"].quantile(0.66)
+
+def classify_district(x):
+    if x > q2:
+        return "High"
+    elif x > q1:
+        return "Medium"
+    else:
+        return "Low"
+
+district_result["Risk_Level"] = district_result["Total_Cases"].apply(classify_district)
+
+# Sort
+district_result = district_result.sort_values(by="Total_Cases", ascending=False)
+
+# ================================
+# STEP 13: Safety Alerts
+# ================================
+def safety_advice(risk):
+    if risk == "High":
+        return "🔴 HIGH ALERT: Avoid isolated areas, stay alert"
+    elif risk == "Medium":
+        return "🟡 MEDIUM ALERT: Be cautious while traveling"
+    else:
+        return "🟢 LOW ALERT: Area relatively safe"
+
+district_result["Safety_Advice"] = district_result["Risk_Level"].apply(safety_advice)
+
+# ================================
+# STEP 14: Final Output
+# ================================
+print("\n🔹 FINAL DISTRICT RISK 🔹\n")
+print(district_result.head(10))
+
+# ================================
+# 📊 FINAL GRAPH: Improved Version
+# ================================
+# ================================
+# 📊 FINAL GRAPH (CLEAN + VALUES)
+# ================================
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+
+# Color mapping
+color_map = {"High": "red", "Medium": "gold", "Low": "green"}
+colors = district_result["Risk_Level"].map(color_map)
+
+# Create figure
+plt.figure(figsize=(16,7))
+
+bars = plt.bar(
+    district_result["District"],
+    district_result["Total_Cases"],
+    color=colors
+)
+
+# Titles and labels
+plt.title("District Risk Levels (Color Coded)", fontsize=16, fontweight='bold')
+plt.xlabel("District", fontsize=12)
+plt.ylabel("Total Cases", fontsize=12)
+
+# X-axis formatting
+plt.xticks(rotation=60, ha='right', fontsize=9)
+
+# Grid for clarity
+plt.grid(axis='y', linestyle='--', alpha=0.5)
+
+# 🔥 Add values above bars
+for bar in bars:
+    height = bar.get_height()
+    plt.text(
+        bar.get_x() + bar.get_width()/2,
+        height + (height * 0.02),  # auto spacing
+        int(height),
+        ha='center',
+        va='bottom',
+        fontsize=8
+    )
+
+# Legend
+plt.legend(handles=[
+    mpatches.Patch(color='red', label='High Risk'),
+    mpatches.Patch(color='gold', label='Medium Risk'),
+    mpatches.Patch(color='green', label='Low Risk')
+])
+
+# Adjust layout
+plt.tight_layout()
+
+# Save (high quality)
+plt.savefig("District_Risk_Final.png", dpi=300)
+
+# Download (for Colab)
+from google.colab import files
+files.download("District_Risk_Final.png")
+
+plt.show()
